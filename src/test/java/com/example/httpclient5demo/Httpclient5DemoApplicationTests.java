@@ -17,6 +17,32 @@ import org.springframework.web.client.RestTemplate;
 class Httpclient5DemoApplicationTests {
 
 	@Test
+	void redirectsCanBeEnabled() {
+		RestTemplate restTemplate = new RestTemplate();
+		RequestConfig.Builder requestConfig = RequestConfig.custom()
+				.setRedirectsEnabled(true);
+		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create()
+				.setDefaultRequestConfig(requestConfig.build());
+		HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClientBuilder.build());
+		restTemplate.setRequestFactory(requestFactory);
+		String response = restTemplate.getForObject("https://httpbin.org/redirect-to?url=https://httpbin.org/base64/SFRUUEJJTiBpcyBhd2Vzb21l", String.class);
+		assertThat(response).isEqualTo("HTTPBIN is awesome");
+	}
+
+	@Test
+	void redirectsCanBeEnabledWhenBuffering() {
+		RestTemplate restTemplate = new RestTemplate();
+		RequestConfig.Builder requestConfig = RequestConfig.custom()
+				.setRedirectsEnabled(true);
+		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create()
+				.setDefaultRequestConfig(requestConfig.build());
+		HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClientBuilder.build());
+		restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(requestFactory));
+		String response = restTemplate.getForObject("https://httpbin.org/redirect-to?url=https://httpbin.org/base64/SFRUUEJJTiBpcyBhd2Vzb21l", String.class);
+		assertThat(response).isEqualTo("HTTPBIN is awesome");
+	}
+
+	@Test
 	void contextLoads(@Autowired RestTemplateBuilderConfigurer configurer) {
 		RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
 		configurer.configure(restTemplateBuilder);
